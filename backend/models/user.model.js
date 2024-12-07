@@ -25,6 +25,24 @@ const userSchema = new mongoose.Schema(
 			type: String,
 			default: "",
 		},
+		CommunicatedUsers: {
+			type: Array,
+			default: [],
+		},
+		role: {
+			type: String,
+			default: "user",
+			required: true,
+			enum: ["shop", "user"],
+		},
+		longitude: {
+			type: Number,
+			default: 0,
+		},
+		latitude: {
+			type: Number,
+			default: 0,
+		},
 		// createdAt, updatedAt => Member since <createdAt>
 	},
 	{ timestamps: true }

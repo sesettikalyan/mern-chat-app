@@ -4,14 +4,14 @@ import MessageSkeleton from "../skeletons/MessageSkeleton";
 import Message from "./Message";
 import useListenMessages from "../../hooks/useListenMessages";
 
-const Messages = () => {
+const Messages = ({selectedConversation}) => {
 	const { messages, loading } = useGetMessages();
-	useListenMessages();
+	useListenMessages(selectedConversation);
 	const lastMessageRef = useRef();
 
 	useEffect(() => {
 		setTimeout(() => {
-			lastMessageRef.current?.scrollIntoView({ behavior: "smooth" });
+			lastMessageRef.current?.scrollIntoView({ behavior: "smooth" });			
 		}, 100);
 	}, [messages]);
 
@@ -21,9 +21,10 @@ const Messages = () => {
 				messages.length > 0 &&
 				messages.map((message) => (
 					<div key={message._id} ref={lastMessageRef}>
-						<Message message={message} />
+						<Message message={message} /> 
 					</div>
 				))}
+				<p>{messages[messages.length - 1]?.viewed ? "seen" : "not seen"}</p>
 
 			{loading && [...Array(3)].map((_, idx) => <MessageSkeleton key={idx} />)}
 			{!loading && messages.length === 0 && (

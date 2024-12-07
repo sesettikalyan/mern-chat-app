@@ -7,7 +7,8 @@ import toast from "react-hot-toast";
 const SearchInput = () => {
 	const [search, setSearch] = useState("");
 	const { setSelectedConversation } = useConversation();
-	const { conversations } = useGetConversations();
+	// const { conversations } = useGetConversations();
+	const [conversations, setConversations] = useState([]);
 
 	const handleSubmit = (e) => {
 		e.preventDefault();
@@ -16,7 +17,20 @@ const SearchInput = () => {
 			return toast.error("Search term must be at least 3 characters long");
 		}
 
-		const conversation = conversations.find((c) => c.fullName.toLowerCase().includes(search.toLowerCase()));
+		// const conversation = conversations.find((c) => c.fullName.toLowerCase().includes(search.toLowerCase()));
+		// getting user by username using an api
+		const getConversation = async () => {
+			try {
+				const res = await fetch(`/api/users/${search}`);
+				const data = await res.json();
+				if (data.error) throw new Error(data.error);
+				setConversations([...conversations, data]);
+				return data;
+			} catch (error) {
+				toast.error(error.message);
+			}
+		};
+		getConversation();
 
 		if (conversation) {
 			setSelectedConversation(conversation);
@@ -25,6 +39,7 @@ const SearchInput = () => {
 	};
 	return (
 		<form onSubmit={handleSubmit} className='flex items-center gap-2'>
+			<div>
 			<input
 				type='text'
 				placeholder='Search…'
@@ -32,9 +47,35 @@ const SearchInput = () => {
 				value={search}
 				onChange={(e) => setSearch(e.target.value)}
 			/>
+			{/* getting the conversations data  displaying
+			 the data is like this 
+			 {
+    "profilePic": "",
+    "CommunicatedUsers": [],
+    "_id": "674eca30a685af9173caec40",
+    "username": "karthik",
+    "role": "shop",
+    "createdAt": "2024-12-03T09:06:56.462Z",
+    "updatedAt": "2024-12-03T09:06:56.462Z",
+    "__v": 0
+}
+			*/}
+			 <div>
+				{conversations.map((conversation) => (
+					<div key={conversation._id} onClick={() => {
+						setSelectedConversation(conversation);
+						console.log(conversation);
+					}}>
+						{conversation.username}
+					</div>
+				))}	
+				</div>
+
+			</div>
 			<button type='submit' className='btn btn-circle bg-sky-500 text-white'>
 				<IoSearchSharp className='w-6 h-6 outline-none' />
 			</button>
+
 		</form>
 	);
 };

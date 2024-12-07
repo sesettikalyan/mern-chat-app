@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useAuthContext } from "../../context/AuthContext";
 import { extractTime } from "../../utils/extractTime";
 import useConversation from "../../zustand/useConversation";
@@ -13,6 +14,25 @@ const Message = ({ message }) => {
 
 	const shakeClass = message.shouldShake ? "shake" : "";
 
+	useEffect(() => {
+		// calling an update function to make the message to be viewed in the database
+		const updateMessage = async () => {
+			try {
+				const response = await fetch(`/api/messages/${message._id}`, {
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+					},
+				});
+				const data = await response.json();
+				console.log("updateMessage data", data);
+			} catch (error) {
+				console.error("Error in updateMessage:", error);
+			}
+		};
+		updateMessage();
+	}, []);
+
 	return (
 		<div className={`chat ${chatClassName}`}>
 			<div className='chat-image avatar'>
@@ -21,7 +41,7 @@ const Message = ({ message }) => {
 				</div>
 			</div>
 			<div className={`chat-bubble text-white ${bubbleBgColor} ${shakeClass} pb-2`}>{message.message}</div>
-			<div className='chat-footer opacity-50 text-xs flex gap-1 items-center'>{formattedTime}</div>
+			<div className='chat-footer opacity-50 text-xs flex gap-1 items-center'>{formattedTime} </div>
 		</div>
 	);
 };

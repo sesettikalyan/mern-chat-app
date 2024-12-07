@@ -23,6 +23,9 @@ const MessageInput = () => {
 					value={message}
 					onChange={(e) => setMessage(e.target.value)}
 				/>
+				{/* sending file option */}
+				<input type='file' className='hidden' />
+				
 				<button type='submit' className='absolute inset-y-0 end-0 flex items-center pe-3'>
 					{loading ? <div className='loading loading-spinner'></div> : <BsSend />}
 				</button>
