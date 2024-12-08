@@ -5,5 +5,5 @@ export default {
 		extend: {},
 	},
 	// eslint-disable-next-line no-undef
-	plugins: [daisyui],
+	// plugins: [require("daisyui")],
 };
