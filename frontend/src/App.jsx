@@ -10,14 +10,18 @@ import MapComponent from "./pages/home/map";
 function App() {
   const { authUser } = useAuthContext();
   return (
-    <div className="p-4 h-screen flex items-center justify-center">
+    <div className="md:p-4 lg:p-4  h-screen flex items-center justify-center">
       <Routes>
         <Route
           path="/"
           element={
             authUser ? (
-              //  <Home />
-              <MapComponent />
+              <>
+                 <Home />
+                 <div className="md:block lg:block hidden ">
+                 <MapComponent />
+                 </div>
+              </>
             ) : (
               <Navigate to={"/login"} />
             )
