@@ -9,16 +9,18 @@ const MapComponent = () => {
   // Hardcoded location points
   const locations = [
     {
-      lat: 17.8177412,
-      lng: 83.2111287,
-      title: "Location 1",
+      lat: 17.8177421,
+      lng: 83.2111286,
+      title: "Xerox Solutions",
       description: "This is location 1",
+      img: "https://media.istockphoto.com/id/1148183399/photo/close-up-hands-choosing-school-stationery-in-the-supermarket.jpg?s=612x612&w=0&k=20&c=LFSn0LcVvX1tmh6LJNBcLJ6VbK2N3RX3gyyTM0Rt0wU=",
     },
     {
       lat: 17.8197412,
       lng: 83.2131287,
-      title: "Location 3",
-      description: "This is location 3",
+      title: "Xerox Solution 2",
+      description: "This is location 2",
+      img: "https://media.istockphoto.com/id/1148183399/photo/close-up-hands-choosing-school-stationery-in-the-supermarket.jpg?s=612x612&w=0&k=20&c=LFSn0LcVvX1tmh6LJNBcLJ6VbK2N3RX3gyyTM0Rt0wU=",
     },
   ];
 
@@ -49,7 +51,6 @@ const MapComponent = () => {
     const leafletJS = document.createElement("script");
     leafletJS.src = "https://unpkg.com/leaflet@1.7.1/dist/leaflet.js";
     leafletJS.onload = () => {
-      // Initialize the map
       const map = L.map(mapRef.current).setView([17.8177412, 83.2111287], 13);
       mapInstanceRef.current = map;
 
@@ -59,14 +60,14 @@ const MapComponent = () => {
           '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
       }).addTo(map);
 
-      // Create custom icon for user location (red)
+      // Custom user location icon
       const userIcon = L.icon({
         iconUrl: mapimg,
         iconSize: [35, 41],
         iconAnchor: [12, 41],
       });
 
-      // Create custom icon for other locations (blue)
+      // Custom other locations icon
       const locationIcon = L.icon({
         iconUrl:
           "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
@@ -80,33 +81,16 @@ const MapComponent = () => {
           const userLat = position.coords.latitude;
           const userLng = position.coords.longitude;
 
-          // Add user marker with custom red icon
-          const userMarker = L.marker([userLat, userLng], {
-            icon: userIcon,
-          }).addTo(map);
-          userMarker.bindPopup("Your Location").openPopup();
+          const userMarker = L.marker([userLat, userLng], { icon: userIcon })
+            .addTo(map)
+            .bindPopup("Your Location")
+            .openPopup();
 
-          // Add initial range circle
-          let rangeCircle = L.circle([userLat, userLng], {
-            color: "blue",
-            fillColor: "blue",
-            fillOpacity: 0.2,
-            radius: radius,
-          }).addTo(map);
+          let rangeCircle;
 
-          // Function to update markers within the range
-          const updateMarkers = () => {
-            // Remove existing markers and circle
-            map.eachLayer((layer) => {
-              if (layer instanceof L.Marker && layer !== userMarker) {
-                map.removeLayer(layer);
-              }
-              if (layer instanceof L.Circle) {
-                map.removeLayer(layer);
-              }
-            });
+          const updateMarkersAndCircle = () => {
+            if (rangeCircle) map.removeLayer(rangeCircle);
 
-            // Add updated circle
             rangeCircle = L.circle([userLat, userLng], {
               color: "blue",
               fillColor: "blue",
@@ -114,7 +98,12 @@ const MapComponent = () => {
               radius: radius,
             }).addTo(map);
 
-            // Add markers within the range with blue icon
+            map.eachLayer((layer) => {
+              if (layer instanceof L.Marker && layer !== userMarker) {
+                map.removeLayer(layer);
+              }
+            });
+
             locations.forEach((location) => {
               const distance = calculateDistance(
                 userLat,
@@ -126,26 +115,20 @@ const MapComponent = () => {
                 const marker = L.marker([location.lat, location.lng], {
                   icon: locationIcon,
                 }).addTo(map);
-                marker.bindPopup(
-                  `<strong>${location.title}</strong><br>${location.description}`
-                );
+                marker.bindPopup(`
+                  <div class="flex flex-col items-center">
+                    <img src=${location.img} class="w-20 h-20 object-cover rounded-full mb-2" />
+                    <h3 class="text-lg font-bold">${location.title}</h3>
+                    <p>${location.description}</p>
+                    <p class="text-sm text-gray-600">Distance: ${distance.toFixed(
+                      2
+                    )} meters</p>
+                  </div>`);
               }
             });
           };
 
-          // Initial marker update
-          updateMarkers();
-
-          // Update markers when radius changes
-          const radiusInput = document.getElementById("radiusInput");
-          if (radiusInput) {
-            radiusInput.value = radius; // Set initial radius value
-            radiusInput.addEventListener("input", (e) => {
-              const newRadius = parseInt(e.target.value, 10) || 1000;
-              setRadius(newRadius);
-              updateMarkers();
-            });
-          }
+          updateMarkersAndCircle();
         });
       } else {
         alert("Geolocation is not supported by this browser.");
@@ -155,7 +138,6 @@ const MapComponent = () => {
     document.body.appendChild(leafletJS);
 
     return () => {
-      // Cleanup function to remove Leaflet scripts and map instance
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
@@ -166,26 +148,25 @@ const MapComponent = () => {
   }, [radius]);
 
   return (
-    <div className="p-4">
-      <h3 className="text-lg font-bold mb-4 text-center">
-        Map with Range Filtering
+    <div className="p-6">
+      <h3 className="text-2xl font-bold text-center text-blue-600 mb-4">
+        Nearby Locations with Range Filter
       </h3>
       <div
         id="map"
         ref={mapRef}
-        style={{
-          width: "100vw",
-          height: "90vh",
-          borderRadius: "8px",
-          boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
-        }}></div>
-      <div className="mt-4 flex flex-col sm:flex-row items-center gap-4">
+        className="w-full h-96 sm:h-[70vh] rounded-lg shadow-lg"
+      ></div>
+      <div className="mt-6 flex flex-col sm:flex-row justify-center items-center gap-4">
+        <label className="text-lg font-medium text-gray-700">
+          Search Radius (meters):
+        </label>
         <input
-          id="radiusInput"
           type="number"
-          placeholder="Enter search radius (meters)"
-          className="w-full sm:w-auto p-2 border rounded shadow focus:outline-none"
-          defaultValue={radius}
+          value={radius}
+          onChange={(e) => setRadius(parseInt(e.target.value, 10) || 1000)}
+          placeholder="Enter radius"
+          className="w-full sm:w-auto p-2 border rounded-lg shadow focus:outline-none focus:ring focus:ring-blue-300"
         />
       </div>
     </div>
